@@ -99,6 +99,29 @@
     <AppSessionHistory v-if="!pending" :stations="stations" />
     <div v-else>Идет загрузка...</div>
   </div>
+  <div class="grid grid-cols-2 gap-4 mt-5">
+    <UCard class="bg-[#090B0E80]">
+      <template #header>
+        <div class="font-bold text-xl text-center">
+          Пролёты по дням недели
+        </div>
+      </template>
+      <div class="h-96 p-4">
+        <AppPassesPerDayChart />
+      </div>
+    </UCard>
+
+    <UCard class="bg-[#090B0E80]">
+      <template #header>
+        <div class="font-bold text-xl text-center">
+          Процент успешных приёмов
+        </div>
+      </template>
+      <div class="h-96 p-4">
+        <AppObservationStatusPieChart />
+      </div>
+    </UCard>
+  </div>
 </template>
 
 <script lang="ts">

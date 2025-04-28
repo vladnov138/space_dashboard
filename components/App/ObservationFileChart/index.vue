@@ -11,12 +11,12 @@
   ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
   
   const chartData = ref<ChartData<'bar', number[], string>>({
-    labels: ['0-5 min', '5-10 min', '10-15 min', '15-20 min', '20+ min'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
       {
-        label: 'Observation Count',
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        data: [12, 19, 3, 5, 2]
+        label: 'File Count',
+        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+        data: [30, 50, 40, 60, 70, 50]
       }
     ]
   })
@@ -28,7 +28,7 @@
       legend: { display: false },
       title: {
         display: true,
-        text: 'Observation Duration (minutes)'
+        text: 'Observation File Count'
       }
     }
   })
