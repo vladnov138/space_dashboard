@@ -101,8 +101,9 @@ onMounted(async () => {
     });
   });
   drawSatellites(yellowIcon);
-  console.log(props.coverageRadiusKm)
-  drawCoverageCircle(props.coverageStationCoords.lat, props.coverageStationCoords.lng, props.coverageRadiusKm);
+  if (props.coverageRadiusKm !== null) {
+    drawCoverageCircle(props.coverageStationCoords.lat, props.coverageStationCoords.lng, props.coverageRadiusKm);
+  }
 
   watch(
     () => props.satellites,
@@ -194,4 +195,16 @@ function drawCoverageCircle(stationLat: number, stationLng: number, radiusKm: nu
   }).addTo(map);
 }
 
+watch(
+  () => [props.coverageRadiusKm, props.coverageStationCoords],
+  ([radius, coords]) => {
+    if (radius && coords) {
+      drawCoverageCircle(coords.lat, coords.lng, radius);
+    } else if (coverageCircle) {
+      coverageCircle.remove();
+      coverageCircle = null;
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
