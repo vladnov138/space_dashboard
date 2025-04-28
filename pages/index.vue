@@ -22,9 +22,10 @@
     </div>
     <div class="flex mt-5">
       <div class="basis-3/4 relative">
-        <AppMap :stations="stations" :satellites="stationSatellites"
-          :trajectory="satelliteTrajectories" :coverageRadiusKm="stationCoverage" 
-          :coverageStationCoords="station ? { lat: station.lat, lng: station.lng } : null" @station-selected="handleStationClick" />
+        <AppMap v-if="!pending" :stations="stations" :satellites="stationSatellites" :trajectory="satelliteTrajectories"
+          :coverageRadiusKm="stationCoverage"
+          :coverageStationCoords="station ? { lat: station.lat, lng: station.lng } : null"
+          @station-selected="handleStationClick" />
       </div>
       <div class="basis-1/4 flex flex-col ml-5 gap-4">
         <div class="flex-1">
@@ -44,8 +45,17 @@
       </UCard>
 
       <UCard class="bg-[#090B0E80] h-full">
-        <div class="relative w-full h-full flex justify-center items-center overflow-hidden">
-          <img src="public/watefall.png" class="absolute transform rotate-90 max-h-full object-contain" />
+        <div class="flex">
+          <div class="text-lg font-bold text-center flex items-center justify-center px-2"
+            style="writing-mode: vertical-rl; transform: rotate(180deg);">
+            ВРЕМЯ
+          </div>
+          <div class="relative w-full h-full flex justify-center items-center overflow-hidden">
+            <img src="public/watefall.jpg" />
+          </div>
+        </div>
+        <div class="text-lg font-bold text-center">
+          ЧАСТОТА
         </div>
       </UCard>
 
@@ -58,8 +68,13 @@
         </div>
       </UCard>
       <UCard class="bg-[#090B0E80] row-span-2">
+        <template #header>
+          <div class="font-bold text-xl text-center">
+            График уровня сигнала (RSSI, SNR)
+          </div>
+        </template>
         <div>
-          *Уровень сигнала*
+          <img src="public/chart-demo.jpg" />
         </div>
       </UCard>
 
@@ -70,18 +85,19 @@
           </div>
         </template>
         <div>
-          Temp:
+          Temp: 22.5 °C
         </div>
         <div>
-          Bat:
+          Bat: 78%
         </div>
         <div>
-          GPS:
+          GPS: 52.5200° N, 13.4050° E
         </div>
       </UCard>
     </div>
 
-    <AppSessionHistory />
+    <AppSessionHistory v-if="!pending" :stations="stations" />
+    <div v-else>Идет загрузка...</div>
   </div>
 </template>
 
@@ -112,9 +128,7 @@ const selectStation = async () => {
     station.value = unref(stations).filter(st => st.name === unref(selectedStation))[0];
     status.value = unref(station).status;
     getSatelliteByStation(unref(station).id);
-    console.log("stationId ", unref(station).id)
     const coverage = await $apiFetch(`/stations/station/${unref(station).id}&${unref(alt)}/`);
-    console.log(coverage)
     stationCoverage.value = coverage.coverage_radius;
   }
 }
@@ -174,7 +188,6 @@ const handleStationClick = async (stationId: number) => {
     status.value = foundStation.status;
     getSatelliteByStation(foundStation.id);
     const coverage = await $apiFetch(`/stations/station/${unref(station).id}&${unref(alt)}/`);
-    console.log(coverage.coverage_radius)
     stationCoverage.value = coverage.coverage_radius;
   }
 };

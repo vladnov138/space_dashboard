@@ -104,15 +104,6 @@ onMounted(async () => {
   console.log(props.coverageRadiusKm)
   drawCoverageCircle(props.coverageStationCoords.lat, props.coverageStationCoords.lng, props.coverageRadiusKm);
 
-  // const trajectory = L.polyline(satellitePath, {
-  //   color: '#00FFAA',
-  //   weight: 3,
-  //   opacity: 0.8,
-  //   dashArray: '5, 10'
-  // }).addTo(map);
-
-  // map.fitBounds(trajectory.getBounds());
-
   watch(
     () => props.satellites,
     () => {
