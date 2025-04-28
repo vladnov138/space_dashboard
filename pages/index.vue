@@ -16,18 +16,15 @@
         <UInput v-model="steps" />
       </div>
     </div>
+    <div class="flex space-x-5">
+      <div class="font-bold text-md">Высота</div>
+      <UInput v-model="alt" />
+    </div>
     <div class="flex mt-5">
       <div class="basis-3/4 relative">
-        <AppMap
-          v-if="!mapLoading"
-          :stations="stations"
-          :satellites="stationSatellites"
-          :trajectory="satelliteTrajectories"
-          @station-selected="handleStationClick"
-        />
-        <div v-else class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-xl">
-          Загрузка карты...
-        </div>
+        <AppMap :stations="stations" :satellites="stationSatellites"
+          :trajectory="satelliteTrajectories" :coverageRadiusKm="stationCoverage" 
+          :coverageStationCoords="station ? { lat: station.lat, lng: station.lng } : null" @station-selected="handleStationClick" />
       </div>
       <div class="basis-1/4 flex flex-col ml-5 gap-4">
         <div class="flex-1">
@@ -46,13 +43,13 @@
         </div>
       </UCard>
 
-      <UCard class="bg-[#090B0E80]">
-        <div>
-          *Водопад*
+      <UCard class="bg-[#090B0E80] h-full">
+        <div class="relative w-full h-full flex justify-center items-center overflow-hidden">
+          <img src="public/watefall.png" class="absolute transform rotate-90 max-h-full object-contain" />
         </div>
       </UCard>
 
-      <UCard class="bg-[#090B0E80]">
+      <UCard class="bg-[#090B0E80] text-lg font-bold text-center">
         <div>
           Протокол: AX.25
         </div>
@@ -66,7 +63,7 @@
         </div>
       </UCard>
 
-      <UCard class="bg-[#090B0E80]">
+      <UCard class="bg-[#090B0E80] text-lg font-bold">
         <template #header>
           <div class="text-center">
             Телеметрические данные
@@ -98,30 +95,38 @@ const station = ref();
 const stationSatellites = ref([]);
 const status = ref("unknown");
 const minutes = ref(15);
+const alt = ref(10);
 const steps = ref(30);
 const maxMinutes = 1440;
 const maxSteps = 1000;
 const satelliteTrajectories = ref<any[]>([]);
 const mapLoading = ref(false);
+const stationCoverage = ref<number | null>(null);
 
 const wsConnections = ref<Record<number, WebSocket>>({});  // ключ - norad_id
-const { data: stations, pending, error } = useApiFetch('/stations/stations');
+const { data: stations, pending, error } = useApiFetch('/stations/stations/');
 
-const selectStation = () => {
+const selectStation = async () => {
   if (unref(selectedStation) !== undefined) {
+    stationCoverage.value = null;
     station.value = unref(stations).filter(st => st.name === unref(selectedStation))[0];
     status.value = unref(station).status;
     getSatelliteByStation(unref(station).id);
+    console.log("stationId ", unref(station).id)
+    const coverage = await $apiFetch(`/stations/station/${unref(station).id}&${unref(alt)}/`);
+    console.log(coverage)
+    stationCoverage.value = coverage.coverage_radius;
   }
 }
 
 const getSatelliteByStation = async (stationId: number) => {
   try {
-    mapLoading.value = true; // <-- включаем загрузку
+    mapLoading.value = true;
     Object.values(wsConnections.value).forEach(socket => socket.close());
     wsConnections.value = {};
     stationSatellites.value = [];
     satelliteTrajectories.value = [];
+
     const satellites = await $apiFetch(`/tracking/station/next_passes/${stationId}/`);
     stationSatellites.value = satellites.map(sat => ({
       ...sat,
@@ -152,6 +157,7 @@ const getSatelliteByStation = async (stationId: number) => {
         console.log(`WebSocket закрыт для NORAD ID: ${noradId}`);
       };
     });
+
     await loadSatelliteTrajectories();
   } catch (ex: any) {
     console.error('Ошибка при подключении к WebSocket:', ex);
@@ -160,13 +166,16 @@ const getSatelliteByStation = async (stationId: number) => {
   }
 };
 
-const handleStationClick = (stationId: number) => {
+const handleStationClick = async (stationId: number) => {
   const foundStation = unref(stations).find(st => st.id === stationId);
   if (foundStation) {
     station.value = foundStation;
     selectedStation.value = foundStation.name;
     status.value = foundStation.status;
     getSatelliteByStation(foundStation.id);
+    const coverage = await $apiFetch(`/stations/station/${unref(station).id}&${unref(alt)}/`);
+    console.log(coverage.coverage_radius)
+    stationCoverage.value = coverage.coverage_radius;
   }
 };
 

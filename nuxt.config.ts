@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: false,
   modules: ['@nuxtjs/color-mode', '@nuxt/ui', '@nuxt/icon'],
   colorMode: {
     preference: 'dark',

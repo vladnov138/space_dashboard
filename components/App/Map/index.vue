@@ -34,7 +34,7 @@ interface IProps {
     lat: number,
     lng: number,
     status: string
-  }[],
+  }[] | null,
   satellites: {
     name: string,
     position: {
@@ -44,6 +44,8 @@ interface IProps {
     elevation_km: number,
   }[],
   trajectory: ITrajectory[]
+  coverageStationCoords?: { lat: number; lng: number }
+  coverageRadiusKm?: number
 }
 </script>
 
@@ -54,6 +56,7 @@ const props = defineProps<IProps>();
 let satelliteMarkers: any[] = [];
 let map;
 let trajectoryLines: any[] = [];
+let coverageCircle: any = null;
 const emit = defineEmits<{
   (e: 'station-selected', stationId: number): void
 }>();
@@ -98,6 +101,8 @@ onMounted(async () => {
     });
   });
   drawSatellites(yellowIcon);
+  console.log(props.coverageRadiusKm)
+  drawCoverageCircle(props.coverageStationCoords.lat, props.coverageStationCoords.lng, props.coverageRadiusKm);
 
   // const trajectory = L.polyline(satellitePath, {
   //   color: '#00FFAA',
@@ -184,5 +189,18 @@ async function drawSatellites(yellowIcon: any) {
   });
 }
 
+function drawCoverageCircle(stationLat: number, stationLng: number, radiusKm: number) {
+  if (coverageCircle) {
+    coverageCircle.remove();
+  }
+  console.log("here")
+  console.log(stationLat, stationLng, radiusKm)
+  coverageCircle = L.circle([stationLat, stationLng], {
+    radius: radiusKm * 1000,
+    color: 'blue',
+    fillColor: '#00FF00',
+    fillOpacity: 0.5
+  }).addTo(map);
+}
 
 </script>
